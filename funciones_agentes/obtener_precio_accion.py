@@ -1,30 +1,13 @@
-# importar la función By de selenium.webdriver.common.by,
-# misma que permite seleccionar elementos de una página web
-# por medio de selectores CSS.
 from selenium.webdriver.common.by import By
 
-# Función para obtener el precio de una acción
-# Parámetros:
-# - driver: objeto de Selenium WebDriver
-# - consulta: cadena de texto que contiene la consulta del usuario
-def obtener_precio_accion(driver, consulta):
-    # Buscar el precio de una acción en Google
-    driver.get(f"https://www.google.com/search?q=precio+acción+{consulta}")
-
-    # Bloque try-except para manejar errores
+def obtener_precio_accion(consulta, driver):
+    """Busca precios en Google Finance usando selectores CSS"""
+    driver.get(f"https://www.google.com/search?q={consulta}")
     try:
-        # Obtener el nombre completo de la emprea
-        empresa = driver.find_element(By.CSS_SELECTOR, "div[class='PZPZlf ssJ7i B5dxMb']").text
-
-        # Obtener el precio de la acción
-        precio = driver.find_element(By.CSS_SELECTOR, "span[jsname='vWLAgc']").text
-
-        # Obtener la divisa de la acción
-        divisa = 
-
-        # Obtener el ticker de la acción. Éste es el código que se usa para identificar la acción en la bolsa. Por ejemplo, el ticker de Apple es AAPL.
-        ticker = 
-        
-        return f"{empresa} [{ticker}]  ${precio} {divisa.upper()}."
-    except Exception as e:
-        return "No se pudo obtener el precio de la acción en este momento."
+        # Selectores basados en tu inspección de navegador
+        empresa = driver.find_element(By.CSS_SELECTOR, ".PZPpjf").text
+        precio = driver.find_element(By.CSS_SELECTOR, "span[vL77Mc]").text
+        ticker = driver.find_element(By.CSS_SELECTOR, ".Dbe7db").text
+        return f"La empresa {empresa} ({ticker}) cotiza en {precio}."
+    except:
+        return "No se pudo encontrar el precio de la acción."
