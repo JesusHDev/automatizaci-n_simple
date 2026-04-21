@@ -2,12 +2,12 @@ from selenium.webdriver.common.by import By
 import time
 
 def obtener_clima(consulta, driver):
-    """Busca el clima actual en Google"""
     driver.get(f"https://www.google.com/search?q={consulta}")
-    time.sleep(2) 
+    time.sleep(3) 
     try:
-        temperatura = driver.find_element(By.CSS_SELECTOR, "#wob_tm").text
-        descripcion = driver.find_element(By.CSS_SELECTOR, "#wob_dc").text
-        return f"El clima para tu búsqueda es: {temperatura}°C, {descripcion}."
+        # Selectores estándar del widget de clima de Google
+        temp = driver.find_element(By.ID, "wob_tm").text
+        desc = driver.find_element(By.ID, "wob_dc").text
+        return f"El clima actual es de {temp}°C con {desc}."
     except:
-        return "No pude obtener los datos del clima."
+        return "No se pudo cargar el widget del clima. Intenta: 'clima en Toluca'."
