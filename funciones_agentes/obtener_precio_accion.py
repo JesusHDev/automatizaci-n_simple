@@ -1,14 +1,37 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 
 def obtener_precio_accion(consulta, driver):
-    driver.get(f"https://www.google.com/search?q={consulta}")
-    time.sleep(3) # Damos 3 segundos para que cargue en WSL
+    # Limpiamos el ticker
+    query = consulta.lower().replace("precio", "").replace("accion", "").replace("de", "").strip()
+    url = f"https://finance.yahoo.com/quote/{query}"
+    driver.get(url)
+    
+    # Tiempo para que el JavaScript de Yahoo "hidrate" los datos
+    time.sleep(6) 
+    
     try:
-        # Selectores más genéricos que Google usa para finanzas
-        empresa = driver.find_element(By.CSS_SELECTOR, "div.PZPpjf").text
-        # Buscamos el precio por el atributo jsname que es más estable
-        precio = driver.find_element(By.CSS_SELECTOR, 'span[jsname="vL77Mc"]').text
-        return f"La empresa {empresa} cotiza actualmente en {precio}."
-    except:
-        return "No pude encontrar el precio. Intenta con 'precio accion Apple'."
+        wait = WebDriverWait(driver, 10)
+        
+        # El selector más robusto de Yahoo para el precio principal
+        selector = 'fin-streamer[data-field="regularMarketPrice"]'
+        
+        # Esperamos a que el elemento esté presente en el código (DOM)
+        elemento = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+        
+        # --- EL GRAN TRUCO ---
+        # .text a veces falla en headless. 
+        # .get_attribute("textContent") extrae el valor directamente del motor,
+        # sin importar si Selenium cree que es "invisible".
+        precio = elemento.get_attribute("textContent").strip()
+        
+        if precio and any(char.isdigit() for char in precio):
+            return f"El valor actual de {query.upper()} es de ${precio} USD."
+        else:
+            return "El elemento cargó pero el número sigue vacío. Reintenta en 5 segundos."
+
+    except Exception as e:
+        driver.save_screenshot("error_final_wsl.png")
+        return "Error de extracción. Revisa la captura 'error_final_wsl.png'."
